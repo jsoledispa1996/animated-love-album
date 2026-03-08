@@ -201,7 +201,7 @@
       transform: translateX(60px);
       transition: opacity .55s ease, transform .55s cubic-bezier(.4,0,.2,1);
       pointer-events: none;
-      padding: 14px 16px calc(88px + env(safe-area-inset-bottom, 0px)) 16px;
+      padding: calc(env(safe-area-inset-top, 0px) + 64px) 16px calc(88px + env(safe-area-inset-bottom, 0px)) 16px;
       text-align: center;
     }
     .page.active  { opacity: 1; transform: translateX(0); pointer-events: all; }
@@ -291,7 +291,7 @@
     .inner-page {
       position: relative;
       width: min(680px, 92vw);
-      max-height: calc(100vh - 100px);
+      max-height: calc(100vh - 162px);
       background:
         radial-gradient(ellipse at 20% 10%, rgba(232,81,106,.08) 0%, transparent 50%),
         radial-gradient(ellipse at 80% 90%, rgba(212,168,67,.06) 0%, transparent 50%),
@@ -304,9 +304,13 @@
         0 20px 60px rgba(0,0,0,.7),
         inset 0 1px 0 rgba(255,255,255,.06);
       display: flex; flex-direction: column;
-      justify-content: center; gap: clamp(8px, 1.6vh, 20px);
-      overflow: hidden;
+      justify-content: flex-start; gap: clamp(8px, 1.6vh, 20px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
     }
+
+    .inner-page::-webkit-scrollbar { display: none; }
 
     /* Corner ornament */
     .inner-page::before, .inner-page::after {
