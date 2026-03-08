@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Para Ashley 🌹</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@500;700&family=Lato:wght@300;400&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --dark:       #07000d;
+      --deep:       #150020;
+      --rose:       #e8516a;
+      --rose-glow:  #ff6b85;
+      --rose-soft:  #ffb3c1;
+      --gold:       #d4a843;
+      --gold-light: #f0cc6e;
+      --cream:      #fff0f4;
+      --text:       #ffe8ef;
+      --text-soft:  #ffccd9;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--dark);
+      font-family: 'Lato', sans-serif;
+      color: var(--text);
+      user-select: none;
+    }
+
+    /* ══════════════════════════════════════
+       INTRO OVERLAY – FLORES QUE SE ABREN
+    ══════════════════════════════════════ */
+    #intro-overlay {
+      position: fixed; inset: 0;
+      z-index: 9999;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 0;
+      background: radial-gradient(ellipse at 50% 50%, #2a0038 0%, #10001a 55%, #07000d 100%);
+      pointer-events: all;
+      transition: opacity 1.1s ease, transform 1.1s ease;
+    }
+    #intro-overlay.hiding {
+      opacity: 0;
+      transform: scale(1.06);
+      pointer-events: none;
+    }
+
+    /* ── campo de flores (canvas) ── */
+    .flower-field {
+      position: relative;
+      width: min(640px, 98vw);
+      height: min(320px, 46vw);
+      margin-bottom: 14px;
+    }
+    #flower-canvas {
+      width: 100%; height: 100%;
+      display: block;
+    }
+
+    /* ── texto intro ── */
+    .intro-label {
+      font-family: 'Lato', sans-serif;
+      font-weight: 300;
+      font-size: clamp(.65rem, 2vw, .82rem);
+      letter-spacing: .42em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      opacity: 0;
+      animation: fadeUp .9s 5.2s forwards;
+      margin-bottom: 10px;
+    }
+    .intro-title {
+      font-family: 'Dancing Script', cursive;
+      font-size: clamp(2.6rem, 8vw, 5rem);
+      font-weight: 700;
+      color: var(--cream);
+      text-align: center;
+      text-shadow: 0 0 50px rgba(232,81,106,.75), 0 0 100px rgba(232,81,106,.35);
+      opacity: 0;
+      animation: fadeUp 1s 5.55s forwards;
+      line-height: 1.1;
+    }
+    .intro-sub {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: clamp(.82rem, 2.2vw, 1rem);
+      color: var(--rose-soft);
+      opacity: 0;
+      animation: fadeUp .9s 6.1s forwards;
+      margin-top: 8px;
+      text-align: center;
+    }
+    .intro-skip {
+      position: absolute;
+      bottom: 28px; right: 28px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,.18);
+      color: rgba(255,255,255,.35);
+      border-radius: 50px;
+      padding: 6px 18px;
+      font-family: 'Lato', sans-serif;
+      font-size: .7rem;
+      letter-spacing: .1em;
+      cursor: pointer;
+      transition: all .3s;
+      opacity: 0;
+      animation: fadeIn .6s 0.8s forwards;
+    }
+    .intro-skip:hover { color: rgba(255,255,255,.75); border-color: rgba(255,255,255,.4); }
+
+    /* ── línea divisoria dorada ── */
+    .intro-divider {
+      width: 0; height: 1.5px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      border-radius: 2px;
+      margin-top: 14px;
+      opacity: 0;
+      animation: expandLine .9s 6.6s ease-out forwards;
+    }
+    @keyframes expandLine {
+      from { width: 0; opacity: 0; }
+      to   { width: 180px; opacity: 1; }
+    }
+
+    /* ── auto-progress bar ── */
+    .intro-progress {
+      position: absolute;
+      bottom: 0; left: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--rose), var(--gold));
+      width: 0;
+      animation: progressBar 8s linear forwards;
+      border-radius: 0 2px 2px 0;
+    }
+    @keyframes progressBar {
+      from { width: 0; }
+      to   { width: 100%; }
+    }
+
+    /* ─── CANVAS PÉTALOS ─── */
+    #petals-canvas {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ─── REPRODUCTOR OCULTO ─── */
+    #yt-player { position: fixed; top: -9999px; left: -9999px; }
+
+    /* ─── CONTROL MÚSICA ─── */
+    #music-btn {
+      position: fixed; top: 18px; right: 20px;
+      z-index: 100;
+      background: rgba(232,81,106,0.18);
+      border: 1.5px solid rgba(232,81,106,0.55);
+      color: var(--rose-soft);
+      border-radius: 50px;
+      padding: 7px 16px;
+      font-size: 0.78rem;
+      letter-spacing: .08em;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all .3s;
+      font-family: 'Lato', sans-serif;
+    }
+    #music-btn:hover { background: rgba(232,81,106,0.35); color: #fff; }
+
+    /* ─── PÁGINAS ─── */
+    .page {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 1;
+      opacity: 0;
+      transform: translateX(100%) scale(0.96);
+      transition: opacity .75s ease, transform .75s cubic-bezier(.77,0,.175,1);
+      pointer-events: none;
+      padding: 24px;
+    }
+    .page.active  { opacity: 1; transform: translateX(0) scale(1); pointer-events: all; }
+    .page.exit    { opacity: 0; transform: translateX(-100%) scale(0.96); pointer-events: none; }
+
+    /* ─────────────────────────────── PORTADA ─── */
+    #cover {
+      background: radial-gradient(ellipse at 50% 40%, #2e0040 0%, #100018 55%, #07000d 100%);
+    }
+
+    .cover-rose-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(circle at 20% 80%, rgba(232,81,106,.18) 0%, transparent 45%),
+        radial-gradient(circle at 80% 20%, rgba(212,168,67,.12) 0%, transparent 40%);
+      pointer-events: none;
+    }
+
+    /* Rosa SVG animada */
+    .big-rose-wrap {
+      animation: floatRose 4s ease-in-out infinite;
+      filter: drop-shadow(0 0 28px rgba(232,81,106,.55));
+      margin-bottom: 24px;
+    }
+    @keyframes floatRose {
+      0%,100% { transform: translateY(0) rotate(-2deg); }
+      50%      { transform: translateY(-14px) rotate(2deg); }
+    }
+
+    .cover-date {
+      font-family: 'Lato', sans-serif;
+      font-weight: 300;
+      font-size: .8rem;
+      letter-spacing: .35em;
+      color: var(--gold-light);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      opacity: 0;
+      animation: fadeUp .9s .4s forwards;
+    }
+    .cover-title {
+      font-family: 'Dancing Script', cursive;
+      font-size: clamp(3.2rem, 9vw, 6rem);
+      font-weight: 700;
+      color: var(--cream);
+      line-height: 1;
+      text-align: center;
+      text-shadow: 0 0 40px rgba(232,81,106,.7), 0 0 80px rgba(232,81,106,.35);
+      opacity: 0;
+      animation: fadeUp .9s .6s forwards;
+    }
+    .cover-sub {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: clamp(.85rem, 2.5vw, 1.1rem);
+      color: var(--rose-soft);
+      margin-top: 10px;
+      opacity: 0;
+      animation: fadeUp .9s .85s forwards;
+    }
+    .start-btn {
+      margin-top: 36px;
+      padding: 14px 40px;
+      border: none;
+      border-radius: 50px;
+      background: linear-gradient(135deg, #e8516a, #c0394f);
+      color: #fff;
+      font-family: 'Dancing Script', cursive;
+      font-size: 1.3rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 32px rgba(232,81,106,.45);
+      transition: all .3s;
+      opacity: 0;
+      animation: fadeUp .9s 1.1s forwards;
+      letter-spacing: .04em;
+    }
+    .start-btn:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 14px 40px rgba(232,81,106,.6);
+    }
+
+    /* ─────────────────────────────── PÁGINAS INTERIORES ─── */
+    .inner-page {
+      position: relative;
+      width: min(750px, 96vw);
+      min-height: min(580px, 85vh);
+      background:
+        radial-gradient(ellipse at 20% 10%, rgba(232,81,106,.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 90%, rgba(212,168,67,.06) 0%, transparent 50%),
+        linear-gradient(160deg, #160024 0%, #0c0015 60%, #0a0012 100%);
+      border: 1px solid rgba(232,81,106,.22);
+      border-radius: 24px;
+      padding: clamp(28px,5vw,52px) clamp(28px,6vw,64px);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.03),
+        0 24px 80px rgba(0,0,0,.7),
+        inset 0 1px 0 rgba(255,255,255,.06);
+      display: flex; flex-direction: column;
+      justify-content: center; gap: 22px;
+      overflow: hidden;
+    }
+
+    /* Corner ornament */
+    .inner-page::before, .inner-page::after {
+      content: '✦';
+      position: absolute;
+      font-size: 1rem;
+      color: rgba(212,168,67,.35);
+    }
+    .inner-page::before { top: 18px; left: 22px; }
+    .inner-page::after  { bottom: 18px; right: 22px; }
+
+    .page-tag {
+      font-family: 'Lato', sans-serif;
+      font-weight: 300;
+      font-size: .72rem;
+      letter-spacing: .38em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: .8;
+    }
+    .page-heading {
+      font-family: 'Dancing Script', cursive;
+      font-size: clamp(2.4rem, 7vw, 4rem);
+      font-weight: 700;
+      color: var(--cream);
+      line-height: 1.1;
+      text-shadow: 0 0 30px rgba(232,81,106,.5);
+    }
+    .divider {
+      width: 60px; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--rose), transparent);
+      border-radius: 2px;
+    }
+    .page-text {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(.92rem, 2.3vw, 1.08rem);
+      line-height: 1.85;
+      color: var(--text-soft);
+      font-style: italic;
+      max-width: 560px;
+    }
+    .page-text strong {
+      font-style: normal;
+      color: var(--rose-soft);
+      font-weight: 700;
+    }
+    .page-quote {
+      margin-top: 6px;
+      padding: 14px 20px;
+      border-left: 3px solid rgba(232,81,106,.5);
+      background: rgba(232,81,106,.06);
+      border-radius: 0 10px 10px 0;
+      font-family: 'Dancing Script', cursive;
+      font-size: clamp(1.1rem, 3vw, 1.4rem);
+      color: var(--rose-soft);
+      line-height: 1.5;
+    }
+
+    /* ─── Ilustraciones decorativas por página ─── */
+    .deco-hearts { position: absolute; right: 28px; top: 28px; opacity: .22; font-size: 2rem; line-height: 1.4; pointer-events: none; }
+    .deco-stars  { position: absolute; right: 28px; top: 28px; opacity: .22; font-size: 1.6rem; line-height: 1.6; pointer-events: none; }
+
+    /* ─── Lista "Lo que amo" ─── */
+    .love-list {
+      list-style: none;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .love-list li {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(.88rem, 2.2vw, 1rem);
+      color: var(--text-soft);
+      font-style: italic;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .love-list li::before {
+      content: '♥';
+      color: var(--rose);
+      font-style: normal;
+      font-size: .9rem;
+      flex-shrink: 0;
+      animation: heartbeat 1.4s ease-in-out infinite;
+    }
+    .love-list li:nth-child(2)::before { animation-delay: .2s; }
+    .love-list li:nth-child(3)::before { animation-delay: .4s; }
+    .love-list li:nth-child(4)::before { animation-delay: .6s; }
+    .love-list li:nth-child(5)::before { animation-delay: .8s; }
+    .love-list li:nth-child(6)::before { animation-delay: 1s; }
+
+    @keyframes heartbeat {
+      0%,100% { transform: scale(1); }
+      50%      { transform: scale(1.35); }
+    }
+
+    /* ─── Página final ─── */
+    #final {
+      background: radial-gradient(ellipse at 50% 50%, #2e0040 0%, #100018 55%, #07000d 100%);
+    }
+    .final-emoji {
+      font-size: clamp(3rem, 9vw, 5rem);
+      animation: bigPulse 2s ease-in-out infinite;
+      filter: drop-shadow(0 0 24px rgba(232,81,106,.8));
+    }
+    @keyframes bigPulse {
+      0%,100% { transform: scale(1); }
+      50%      { transform: scale(1.12); }
+    }
+    .final-text {
+      font-family: 'Dancing Script', cursive;
+      font-size: clamp(2rem, 7vw, 3.6rem);
+      font-weight: 700;
+      text-align: center;
+      color: var(--cream);
+      text-shadow: 0 0 50px rgba(232,81,106,.8);
+      line-height: 1.2;
+    }
+    .final-sub {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: clamp(.9rem, 2.5vw, 1.15rem);
+      color: var(--text-soft);
+      text-align: center;
+      max-width: 440px;
+      line-height: 1.7;
+    }
+    .restart-btn {
+      margin-top: 10px;
+      padding: 11px 32px;
+      border: 1.5px solid rgba(232,81,106,.5);
+      border-radius: 50px;
+      background: transparent;
+      color: var(--rose-soft);
+      font-family: 'Dancing Script', cursive;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all .3s;
+    }
+    .restart-btn:hover { background: rgba(232,81,106,.15); color: #fff; }
+
+    /* ─── NAVEGACIÓN ─── */
+    #nav {
+      position: fixed; bottom: 30px;
+      left: 50%; transform: translateX(-50%);
+      z-index: 100;
+      display: flex; align-items: center; gap: 22px;
+    }
+    .nav-arrow {
+      background: rgba(232,81,106,.15);
+      border: 1.5px solid rgba(232,81,106,.4);
+      color: var(--rose-soft);
+      border-radius: 50%;
+      width: 42px; height: 42px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .25s;
+      backdrop-filter: blur(8px);
+    }
+    .nav-arrow:hover { background: rgba(232,81,106,.35); color: #fff; transform: scale(1.08); }
+    .nav-arrow:disabled { opacity: .25; cursor: default; transform: none; }
+    .dots {
+      display: flex; gap: 8px;
+    }
+    .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.2);
+      cursor: pointer;
+      transition: all .3s;
+      border: 1.5px solid rgba(232,81,106,.3);
+    }
+    .dot.active {
+      background: var(--rose);
+      box-shadow: 0 0 8px var(--rose);
+      border-color: var(--rose);
+    }
+
+    /* ─── ANIMACIONES GENÉRICAS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* ─── SPARKLES ─── */
+    .sparkle-container {
+      position: absolute; inset: 0;
+      pointer-events: none; overflow: hidden;
+    }
+    .sparkle {
+      position: absolute;
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--gold-light);
+      box-shadow: 0 0 6px 2px var(--gold);
+      animation: sparkleAnim 3s ease-in-out infinite;
+      opacity: 0;
+    }
+    @keyframes sparkleAnim {
+      0%   { opacity: 0; transform: scale(0) translateY(0); }
+      40%  { opacity: 1; transform: scale(1.4) translateY(-6px); }
+      100% { opacity: 0; transform: scale(0) translateY(-18px); }
+    }
+
+    /* ─── FIREWORKS (página final) ─── */
+    .firework {
+      position: absolute;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: fireworkBurst 1.8s ease-out forwards infinite;
+      opacity: 0;
+    }
+    @keyframes fireworkBurst {
+      0%   { opacity: 1; transform: translate(0,0) scale(1); }
+      100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0); }
+    }
+
+    /* ─── SCROLL PARA MÓVIL ─── */
+    .inner-page { overflow-y: auto; max-height: 85vh; }
+
+    /* Scrollbar bonita */
+    .inner-page::-webkit-scrollbar { width: 5px; }
+    .inner-page::-webkit-scrollbar-track { background: transparent; }
+    .inner-page::-webkit-scrollbar-thumb { background: rgba(232,81,106,.4); border-radius: 3px; }
+
+    /* Responsive tipografía ya cubierta con clamp() */
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════ INTRO OVERLAY ════════════════════ -->
+<div id="intro-overlay">
+  <div class="intro-progress"></div>
+
+  <!-- ─── CAMPO DE FLORES (Canvas) ─── -->
+  <div class="flower-field">
+    <canvas id="flower-canvas"></canvas>
+  </div>
+
+  <p class="intro-label">8 de Marzo · 2026</p>
+  <h1 class="intro-title">Día de la Mujer</h1>
+  <p class="intro-sub">Para ti, que floreces todo lo que tocas ✦</p>
+  <div class="intro-divider"></div>
+
+  <button class="intro-skip" onclick="skipIntro()">Saltar ›</button>
+</div>
+
+<!-- ─── CANVAS PÉTALOS ─── -->
+<canvas id="petals-canvas"></canvas>
+
+<!-- ─── MÚSICA (YouTube IFrame invisible) ─── -->
+<div id="yt-player"></div>
+<button id="music-btn" onclick="toggleMusic()">♪ Música</button>
+
+<!-- ════════════════════════════ PÁGINAS ════════════════════════════ -->
+
+<!-- PORTADA -->
+<section class="page active" id="cover">
+  <div class="cover-rose-bg"></div>
+
+  <!-- Rosa SVG grande -->
+  <div class="big-rose-wrap">
+    <svg width="170" height="170" viewBox="0 0 170 170" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Tallo -->
+      <line x1="85" y1="155" x2="85" y2="120" stroke="#3a7a3a" stroke-width="4" stroke-linecap="round"/>
+      <path d="M85 140 Q70 130 65 118" stroke="#3a7a3a" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <!-- Hoja izq -->
+      <ellipse cx="67" cy="124" rx="14" ry="6" fill="#2e6b2e" transform="rotate(-30 67 124)"/>
+      <!-- Pétalos exteriores -->
+      <ellipse cx="85" cy="68" rx="20" ry="32" fill="#c0394f" transform="rotate(0 85 68)" opacity=".85"/>
+      <ellipse cx="85" cy="68" rx="20" ry="32" fill="#c0394f" transform="rotate(45 85 68)" opacity=".8"/>
+      <ellipse cx="85" cy="68" rx="20" ry="32" fill="#c0394f" transform="rotate(90 85 68)" opacity=".85"/>
+      <ellipse cx="85" cy="68" rx="20" ry="32" fill="#c0394f" transform="rotate(135 85 68)" opacity=".8"/>
+      <!-- Pétalos medios -->
+      <ellipse cx="85" cy="72" rx="15" ry="24" fill="#e8516a" transform="rotate(22.5 85 72)" opacity=".9"/>
+      <ellipse cx="85" cy="72" rx="15" ry="24" fill="#e8516a" transform="rotate(67.5 85 72)" opacity=".9"/>
+      <ellipse cx="85" cy="72" rx="15" ry="24" fill="#e8516a" transform="rotate(112.5 85 72)" opacity=".9"/>
+      <ellipse cx="85" cy="72" rx="15" ry="24" fill="#e8516a" transform="rotate(157.5 85 72)" opacity=".9"/>
+      <!-- Centro -->
+      <circle cx="85" cy="72" r="16" fill="#ff6b85"/>
+      <circle cx="85" cy="72" r="9"  fill="#ff8fa3"/>
+      <circle cx="85" cy="72" r="4"  fill="#ffd0da"/>
+    </svg>
+  </div>
+
+  <p class="cover-date">8 de Marzo · Día de la Mujer · 2026</p>
+  <h1 class="cover-title">Para Ashley</h1>
+  <p class="cover-sub">Un pequeño álbum hecho con todo mi corazón ♥</p>
+  <button class="start-btn" onclick="goToPage(1)">✦ Abrir Álbum ✦</button>
+</section>
+
+<!-- PÁGINA 1 - La Mujer que Eres -->
+<section class="page" id="p1">
+  <div class="inner-page">
+    <div class="sparkle-container" id="sparkles-1"></div>
+    <div class="deco-hearts">🌹<br>🌹</div>
+
+    <p class="page-tag">Capítulo I · Día de la Mujer</p>
+    <h2 class="page-heading">La Mujer que Eres</h2>
+    <div class="divider"></div>
+
+    <p class="page-text">
+      En la vida uno encuentra muchas cosas hermosas, pero
+      hay una que las supera a todas, y eres tú.<br/><br/>
+      Cuando te veo, lo primero que me pierde son
+      <strong>esos ojitos tuyos</strong>. No sé cómo explicarlo,
+      pero cada vez que me miras me enamoro como si fuera
+      la primera vez. No importa cuántas veces pase,
+      siempre tiene el mismo efecto en mí.<br/><br/>
+      Y tu sonrisa, Ashley. Esa sonrisa.
+      Cuando sonríes siento que todo lo demás deja de importar.
+      Me llenas de una <strong>felicidad que no cabe en el pecho</strong>.
+      Eres, sin duda, lo más hermoso que he encontrado en este mundo.
+    </p>
+
+    <div class="page-quote">
+      &ldquo;Sus ojos me enseñaron lo que es perderse en algo
+       y no querer que te encuentren.&rdquo;
+    </div>
+  </div>
+</section>
+
+<!-- PÁGINA 2 - Tu Fuerza me Inspira -->
+<section class="page" id="p2">
+  <div class="inner-page">
+    <div class="sparkle-container" id="sparkles-2"></div>
+    <div class="deco-stars">✦<br>✦<br>✦</div>
+
+    <p class="page-tag">Capítulo II · Día de la Mujer</p>
+    <h2 class="page-heading">Tu Fuerza me Inspira</h2>
+    <div class="divider"></div>
+
+    <p class="page-text">Tiene su carácter, sí. Y amo cada cosa de ella por eso. Aquí van algunas razones:</p>
+
+    <ul class="love-list">
+      <li>Es tranquila, pero cuando se enoja, hasta eso me parece adorable.</li>
+      <li>Tiene un carácter único que la hace completamente ella, sin filtros.</li>
+      <li>Es una mujer fuerte en todos los aspectos, por dentro y por fuera.</li>
+      <li>Cuando se lo propone, no hay meta que se le resista.</li>
+      <li>Lleva su vida con una determinación callada que muy pocos tienen.</li>
+      <li>Es capaz de todo lo que se imagine, y eso la hace imparable.</li>
+    </ul>
+
+    <div class="page-quote">
+      &ldquo;Una mujer que conoce su fuerza no necesita demostrársela
+       a nadie. La vive.&rdquo;
+    </div>
+  </div>
+</section>
+
+<!-- PÁGINA 3 - Eres Extraordinaria -->
+<section class="page" id="p3">
+  <div class="inner-page">
+    <div class="sparkle-container" id="sparkles-3"></div>
+
+    <p class="page-tag">Capítulo III · Día de la Mujer</p>
+    <h2 class="page-heading">Eres Extraordinaria</h2>
+    <div class="divider"></div>
+
+    <p class="page-text">
+      Hay algo que me encanta y no me canso de recordar:
+      cuando le hablo bonito, se pone nerviosa.
+      Ese detalle tan <strong>suyo, tan pequeño, tan ella</strong>
+      es de las cosas que más me gustan de quien es.<br/><br/>
+      Es mi niña. La mujer tranquila que sabe estar en calma,
+      pero que cuando algo no le gusta, lo dice.
+      Es la mujer que esperaba sin saber exactamente
+      cómo iba a ser, y resultó ser
+      <strong>muchísimo más de lo que imaginé</strong>.<br/><br/>
+      Hoy, en su día, solo quiero que sepas que el mundo
+      es mejor porque tú estás en él.
+      Y yo soy el más afortunado de poder verte de cerca.
+    </p>
+
+    <div class="page-quote">
+      &ldquo;Eres exactamente la mujer que necesitaba encontrar.
+       Eres tú, Ashley.&rdquo;
+    </div>
+  </div>
+</section>
+
+<!-- PÁGINA 4 - Gracias por Existir -->
+<section class="page" id="p4">
+  <div class="inner-page">
+    <div class="sparkle-container" id="sparkles-4"></div>
+    <div class="deco-hearts">🌸<br>🌸</div>
+
+    <p class="page-tag">Capítulo IV · Día de la Mujer</p>
+    <h2 class="page-heading">Gracias por Existir</h2>
+    <div class="divider"></div>
+
+    <p class="page-text">
+      No siempre hay palabras para decir lo que uno siente,
+      pero hoy quiero intentarlo.<br/><br/>
+      Gracias por esa <strong>sonrisa que no pide permiso</strong>
+      para iluminar un cuarto entero.
+      Gracias por esos ojitos que cuando me miran
+      me hacen olvidar todo lo que no importa.<br/><br/>
+      Gracias por ponerte nerviosa cuando te hablo bonito,
+      porque ese detalle tan tuyo me recuerda
+      que hay cosas en la vida que son
+      <strong>genuinas, puras y completamente reales</strong>.<br/><br/>
+      Gracias, Ashley.
+      Simplemente por ser la persona que eres.
+    </p>
+
+    <div class="page-quote">
+      &ldquo;No te pido que cambies nada.
+       Eres perfecta exactamente como eres.&rdquo;
+    </div>
+  </div>
+</section>
+
+<!-- PÁGINA 5 - Mi Promesa para Ti -->
+<section class="page" id="p5">
+  <div class="inner-page">
+    <div class="sparkle-container" id="sparkles-5"></div>
+
+    <p class="page-tag">Capítulo V · Día de la Mujer</p>
+    <h2 class="page-heading">Mi Promesa para Ti</h2>
+    <div class="divider"></div>
+
+    <p class="page-text">
+      Que este día no sea solo un día.<br/><br/>
+      Que cada vez que recuerdes estas palabras sepas
+      que alguien en este mundo <strong>te admira profundamente</strong>,
+      te ve con sus ojos y con algo más que ojos,
+      y siente que contigo cerca, todo tiene más sentido.<br/><br/>
+      Me prometo a mí mismo seguir viendo esa sonrisa tuya,
+      seguir perdiéndome en esos ojos,
+      y seguir encantado cada vez que te pongas nerviosa
+      cuando te hable bonito.<br/><br/>
+      Porque tú, mi niña,
+      eres <strong>la mujer que vale cada palabra,
+      cada momento y cada día</strong>.
+    </p>
+
+    <div class="page-quote">
+      &ldquo;Hoy el mundo te celebra.
+       Yo te celebro cada día.&rdquo;
+    </div>
+  </div>
+</section>
+
+<!-- PÁGINA FINAL -->
+<section class="page" id="final">
+  <div id="fireworks-container" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;"></div>
+
+  <div class="final-emoji">🌹</div>
+
+  <h2 class="final-text">
+    Feliz Día de la Mujer,<br/>Ashley
+  </h2>
+
+  <p class="final-sub">
+    Que este día recuerde a todos lo que tú me recuerdas
+    a mí cada día: que hay personas que cambian tu mundo
+    solo con existir.<br/>
+    <span style="color:var(--rose-soft);font-family:'Dancing Script',cursive;font-size:1.3em;">
+      Con todo mi cariño ♥
+    </span>
+  </p>
+
+  <button class="restart-btn" onclick="goToPage(0)">↺ Volver al Inicio</button>
+</section>
+
+<!-- ─── NAVEGACIÓN ─── -->
+<nav id="nav">
+  <button class="nav-arrow" id="btn-prev" onclick="prevPage()" disabled>‹</button>
+  <div class="dots" id="dots"></div>
+  <button class="nav-arrow" id="btn-next" onclick="nextPage()">›</button>
+</nav>
+
+
+<script>
+/* ══════════════════════════════════════
+   CONFIGURACIÓN
+══════════════════════════════════════ */
+const PAGES  = ['cover','p1','p2','p3','p4','p5','final'];
+const TOTAL  = PAGES.length;
+let current  = 0;
+let ytPlayer = null;
+let musicOn  = false;
+
+/* ── Renderizar dots ── */
+const dotsEl = document.getElementById('dots');
+PAGES.forEach((_,i) => {
+  const d = document.createElement('span');
+  d.className = 'dot' + (i===0?' active':'');
+  d.title = `Página ${i+1}`;
+  d.onclick = () => goToPage(i);
+  dotsEl.appendChild(d);
+});
+
+/* ════════════ NAVEGACIÓN ════════════ */
+function goToPage(n) {
+  if (n < 0 || n >= TOTAL || n === current) return;
+
+  const prev = document.getElementById(PAGES[current]);
+  const next = document.getElementById(PAGES[n]);
+
+  prev.classList.remove('active');
+  prev.classList.add('exit');
+  setTimeout(() => prev.classList.remove('exit'), 800);
+
+  next.classList.add('active');
+
+  current = n;
+  updateNav();
+
+  if (n === TOTAL - 1) launchFireworks();
+}
+
+function nextPage() { goToPage(current + 1); }
+function prevPage() { goToPage(current - 1); }
+
+function updateNav() {
+  document.getElementById('btn-prev').disabled = current === 0;
+  document.getElementById('btn-next').disabled = current === TOTAL - 1;
+  dotsEl.querySelectorAll('.dot').forEach((d,i) => {
+    d.classList.toggle('active', i === current);
+  });
+}
+
+/* ══════════════════════ PÉTALOS CANVAS ══════════════════════ */
+(function initPetals() {
+  const canvas = document.getElementById('petals-canvas');
+  const ctx    = canvas.getContext('2d');
+  let W, H;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const COLORS  = ['#e8516a','#ff8fa3','#ffb3c1','#c0394f','#ffffff','#d4a843'];
+  const COUNT   = 55;
+  const petals  = [];
+
+  function rand(a,b) { return a + Math.random()*(b-a); }
+
+  class Petal {
+    constructor() { this.reset(true); }
+    reset(init) {
+      this.x    = rand(0, W);
+      this.y    = init ? rand(-H, 0) : rand(-120, -30);
+      this.r    = rand(3, 8);
+      this.ry   = rand(1.5, 5);
+      this.vx   = rand(-0.6, 0.6);
+      this.vy   = rand(0.6, 1.8);
+      this.rot  = rand(0, Math.PI*2);
+      this.vrot = rand(-0.025, 0.025);
+      this.color= COLORS[Math.floor(Math.random()*COLORS.length)];
+      this.alpha= rand(0.35, 0.75);
+    }
+    update() {
+      this.x   += this.vx;
+      this.y   += this.vy;
+      this.rot += this.vrot;
+      if (this.y > H + 20) this.reset(false);
+    }
+    draw() {
+      ctx.save();
+      ctx.globalAlpha = this.alpha;
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.rot);
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, this.r, this.ry, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  for (let i = 0; i < COUNT; i++) petals.push(new Petal());
+
+  function loop() {
+    ctx.clearRect(0, 0, W, H);
+    petals.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+/* ══════════════════════ SPARKLES ══════════════════════ */
+function addSparkles(containerId) {
+  const c = document.getElementById(containerId);
+  if (!c) return;
+  for (let i = 0; i < 12; i++) {
+    const s = document.createElement('div');
+    s.className = 'sparkle';
+    s.style.left   = (5 + Math.random()*90) + '%';
+    s.style.top    = (5 + Math.random()*90) + '%';
+    s.style.animationDelay    = (Math.random()*3) + 's';
+    s.style.animationDuration = (2 + Math.random()*2) + 's';
+    c.appendChild(s);
+  }
+}
+addSparkles('sparkles-1');
+addSparkles('sparkles-2');
+addSparkles('sparkles-3');
+addSparkles('sparkles-4');
+addSparkles('sparkles-5');
+
+/* ══════════════════════ FIREWORKS ══════════════════════ */
+function launchFireworks() {
+  const c = document.getElementById('fireworks-container');
+  c.innerHTML = '';
+  const PALETTE = ['#e8516a','#ff8fa3','#ffd700','#fff','#ffb3c1','#c0394f','#f0cc6e'];
+  for (let burst = 0; burst < 7; burst++) {
+    setTimeout(() => {
+      const x = 10 + Math.random() * 80;
+      const y = 10 + Math.random() * 60;
+      for (let p = 0; p < 16; p++) {
+        const el  = document.createElement('div');
+        el.className = 'firework';
+        const angle = (p / 16) * 360;
+        const dist  = 50 + Math.random() * 80;
+        const rad   = angle * Math.PI / 180;
+        el.style.left  = x + '%';
+        el.style.top   = y + '%';
+        el.style.background = PALETTE[Math.floor(Math.random()*PALETTE.length)];
+        el.style.width  = (4 + Math.random()*5) + 'px';
+        el.style.height = el.style.width;
+        el.style.setProperty('--dx', (Math.cos(rad)*dist) + 'px');
+        el.style.setProperty('--dy', (Math.sin(rad)*dist) + 'px');
+        el.style.animationDelay    = (Math.random()*.4) + 's';
+        el.style.animationDuration = (1.2 + Math.random()*.8) + 's';
+        c.appendChild(el);
+      }
+    }, burst * 400);
+  }
+  /* re-lanzar cada 6s */
+  clearTimeout(window._fw);
+  window._fw = setTimeout(launchFireworks, 6000);
+}
+
+/* ══════════════════════ MÚSICA ══════════════════════ */
+/* Carga API IFrame de YouTube */
+function loadYouTubeAPI() {
+  const tag = document.createElement('script');
+  tag.src   = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+}
+
+window.onYouTubeIframeAPIReady = function() {
+  ytPlayer = new YT.Player('yt-player', {
+    height: '1', width: '1',
+    videoId: 'YQHsXMglC9A', /* A Thousand Years – Christina Perri */
+    playerVars: { autoplay: 0, loop: 1, playlist: 'YQHsXMglC9A', controls: 0 },
+    events: {
+      onReady: () => {
+        ytPlayer.setVolume(70);
+        /* autoplay en primera interacción */
+        document.body.addEventListener('click', () => {
+          if (!musicOn) { ytPlayer.playVideo(); musicOn = true; updateMusicBtn(); }
+        }, { once: true });
+      }
+    }
+  });
+};
+
+function toggleMusic() {
+  if (!ytPlayer) return;
+  if (musicOn) { ytPlayer.pauseVideo(); musicOn = false; }
+  else         { ytPlayer.playVideo();  musicOn = true;  }
+  updateMusicBtn();
+}
+
+function updateMusicBtn() {
+  document.getElementById('music-btn').textContent = musicOn ? '♬ Música' : '♪ Música';
+}
+
+loadYouTubeAPI();
+
+/* ══════════════════════ INTRO – FLORES CANVAS ══════════════════════ */
+(function initIntro() {
+  document.getElementById('nav').style.visibility = 'hidden';
+  document.getElementById('music-btn').style.visibility = 'hidden';
+
+  const overlay = document.getElementById('intro-overlay');
+  const canvas  = document.getElementById('flower-canvas');
+  const ctx     = canvas.getContext('2d');
+
+  /* Tamaño real del canvas */
+  const field = canvas.parentElement;
+  canvas.width  = field.offsetWidth  || 640;
+  canvas.height = field.offsetHeight || 320;
+  const W = canvas.width, H = canvas.height;
+
+  /* ── Easing ── */
+  function easeOutCubic(t)  { return 1 - Math.pow(1 - Math.min(1,Math.max(0,t)), 3); }
+  function easeOutElastic(t) {
+    t = Math.min(1, Math.max(0, t));
+    if (t === 0 || t === 1) return t;
+    return Math.pow(2, -10*t) * Math.sin((t*10 - 0.75) * (2*Math.PI/3)) + 1;
+  }
+  function clamp01(v) { return Math.min(1, Math.max(0, v)); }
+  function prog(t, t0, dur) { return clamp01((t - t0) / dur); }
+
+  /* ── Definición de flores ──
+     xn  = posición X normalizada (0–1)
+     size= radio del área de cabeza (px)
+     stemH= altura del tallo (px)
+     t0  = tiempo de inicio (s)
+  */
+  const S = W / 640; /* factor de escala */
+  const FLOWERS = [
+    /* 0 – Rosa roja grande, centro */
+    { xn:.50, size:80*S, stemH:H*.78, petals:8,
+      pc:['#c0394f','#e8516a','#c0394f','#e8516a','#c0394f','#e8516a','#c0394f','#e8516a'],
+      cc:'#ff8fa3', ci:'#ffd0da', lc:'#2e6b2e', t0:0.0 },
+    /* 1 – Lavanda, izquierda */
+    { xn:.22, size:58*S, stemH:H*.62, petals:6,
+      pc:['#9b4fc8','#b06fd4','#9b4fc8','#b06fd4','#9b4fc8','#b06fd4'],
+      cc:'#dba8f0', ci:'#f5deff', lc:'#2e6b2e', t0:0.5 },
+    /* 2 – Girasol dorado, derecha */
+    { xn:.78, size:58*S, stemH:H*.62, petals:8,
+      pc:['#d4a843','#f0cc6e','#d4a843','#f0cc6e','#d4a843','#f0cc6e','#d4a843','#f0cc6e'],
+      cc:'#7a4500', ci:'#c97d00', lc:'#3a7a3a', t0:0.3 },
+    /* 3 – Rosa pálida pequeña, extremo izq */
+    { xn:.06, size:40*S, stemH:H*.46, petals:5,
+      pc:['#ff8fa3','#ffb3c1','#ff8fa3','#ffb3c1','#ff8fa3'],
+      cc:'#ffe0e8', ci:'#fff', lc:'#2e6b2e', t0:0.9 },
+    /* 4 – Blanca/morada pequeña, extremo der */
+    { xn:.94, size:40*S, stemH:H*.46, petals:6,
+      pc:['#ead4ff','#f5e6ff','#dba8f0','#ead4ff','#f5e6ff','#dba8f0'],
+      cc:'#e8d8ff', ci:'#fff', lc:'#3a7a3a', t0:0.7 },
+  ];
+
+  const STEM_DUR  = 1.1;
+  const LEAF_DUR  = 0.6;
+  const PETAL_DUR = 0.75;
+  const PETAL_GAP = 0.28;
+  const CTR_DUR   = 0.5;
+
+  function drawFlower(f, t) {
+    const x     = f.xn * W;
+    const baseY = H;
+    const headY = baseY - f.stemH;
+
+    /* Tallo */
+    const sp = easeOutCubic(prog(t, f.t0, STEM_DUR));
+    if (sp <= 0) return;
+    ctx.beginPath();
+    ctx.moveTo(x, baseY);
+    ctx.lineTo(x, baseY - f.stemH * sp);
+    ctx.strokeStyle = f.lc;
+    ctx.lineWidth   = Math.max(2, f.size * 0.18);
+    ctx.lineCap     = 'round';
+    ctx.stroke();
+
+    /* Hoja derecha */
+    const lp = easeOutCubic(prog(t, f.t0 + STEM_DUR*0.45, LEAF_DUR));
+    if (lp > 0) {
+      const lsz = f.size * 0.52;
+      const ly  = baseY - f.stemH * 0.58;
+      ctx.save();
+      ctx.translate(x, ly);
+      ctx.scale(lp, 1);
+      ctx.beginPath();
+      ctx.ellipse(lsz*0.55, 0, lsz*0.65, lsz*0.22, -0.32, 0, Math.PI*2);
+      ctx.fillStyle = f.lc; ctx.fill();
+      ctx.restore();
+      /* Hoja izquierda */
+      const lp2 = easeOutCubic(prog(t, f.t0 + STEM_DUR*0.55, LEAF_DUR));
+      if (lp2 > 0) {
+        ctx.save();
+        ctx.translate(x, ly + f.stemH*0.09);
+        ctx.scale(-lp2, 1);
+        ctx.beginPath();
+        ctx.ellipse(lsz*0.5, 0, lsz*0.6, lsz*0.2, -0.3, 0, Math.PI*2);
+        ctx.fillStyle = f.lc; ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    /* Pétalos – uno a uno con efecto elástico */
+    const pt0  = f.t0 + STEM_DUR * 0.72;
+    const pR   = f.size;
+    const pW   = f.size * 0.44;
+    const pLen = f.size * 0.72;
+
+    for (let i = 0; i < f.petals; i++) {
+      const angle = (i / f.petals) * Math.PI * 2;
+      const pp    = easeOutElastic(prog(t, pt0 + i*PETAL_GAP, PETAL_DUR));
+      if (pp <= 0) continue;
+      ctx.save();
+      ctx.globalAlpha = Math.min(0.93, pp * 2) * 0.93;
+      ctx.translate(x, headY);
+      ctx.rotate(angle);
+      /* scaleY abre el pétalo hacia afuera: origen en 0,0 (centro flor) */
+      ctx.scale(1, pp);
+      ctx.beginPath();
+      ctx.ellipse(0, -(pLen * 0.62 + pW*0.5), pW, pLen*0.68, 0, 0, Math.PI*2);
+      ctx.fillStyle = f.pc[i % f.pc.length];
+      ctx.fill();
+      ctx.restore();
+    }
+
+    /* Centro */
+    const cT0 = pt0 + (f.petals-1)*PETAL_GAP + PETAL_DUR - 0.1;
+    const cp  = easeOutElastic(prog(t, cT0, CTR_DUR));
+    if (cp > 0) {
+      const cr = f.size * 0.3;
+      ctx.save();
+      ctx.translate(x, headY);
+      ctx.scale(cp, cp);
+      ctx.shadowColor = f.cc; ctx.shadowBlur = 10;
+      ctx.beginPath(); ctx.arc(0,0,cr,0,Math.PI*2);
+      ctx.fillStyle = f.cc; ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.beginPath(); ctx.arc(0,0,cr*0.48,0,Math.PI*2);
+      ctx.fillStyle = f.ci; ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  let animId;
+  const t0 = performance.now();
+
+  function loop() {
+    const t = (performance.now() - t0) / 1000;
+    ctx.clearRect(0, 0, W, H);
+    FLOWERS.forEach(f => drawFlower(f, t));
+    animId = requestAnimationFrame(loop);
+  }
+  loop();
+
+  /* auto-dismiss a los 8.2s */
+  const autoTimer = setTimeout(() => dismissIntro(), 8200);
+  window._introTimer = autoTimer;
+
+  window.skipIntro = function() {
+    clearTimeout(window._introTimer);
+    cancelAnimationFrame(animId);
+    dismiss();
+  };
+
+  function dismissIntro() {
+    cancelAnimationFrame(animId);
+    dismiss();
+  }
+  function dismiss() {
+    overlay.classList.add('hiding');
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      document.getElementById('nav').style.visibility = '';
+      document.getElementById('music-btn').style.visibility = '';
+    }, 1150);
+  }
+})();
+
+/* ══════════════════════ TECLADO ══════════════════════ */
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  nextPage();
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')    prevPage();
+});
+
+/* ══════════════════════ SWIPE TÁCTIL ══════════════════════ */
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+document.addEventListener('touchend',   e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) > 50) { dx < 0 ? nextPage() : prevPage(); }
+});
+</script>
+</body>
+</html>
