@@ -312,7 +312,37 @@
 
     .inner-page::-webkit-scrollbar { display: none; }
 
-    /* Corner ornament */
+    /* ─── Indicador "desliza para leer" ─── */
+    .scroll-hint {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity .4s ease;
+      z-index: 10;
+    }
+    .scroll-hint.hidden { opacity: 0; }
+    .scroll-hint span {
+      font-family: 'Lato', sans-serif;
+      font-size: .58rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(255,180,193,.6);
+    }
+    .scroll-hint svg {
+      width: 18px; height: 18px;
+      animation: bounceDown .9s ease-in-out infinite;
+    }
+    @keyframes bounceDown {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(5px); }
+    }
     .inner-page::before, .inner-page::after {
       content: '✦';
       position: absolute;
@@ -630,7 +660,7 @@
 
 <!-- PÁGINA 1 - La Mujer que Eres -->
 <section class="page" id="p1">
-  <div class="inner-page">
+  <div class="inner-page" onscroll="checkScroll(this)">
     <div class="sparkle-container" id="sparkles-1"></div>
     <div class="deco-hearts">🌹<br>🌹</div>
 
@@ -661,12 +691,16 @@
       &ldquo;Sus ojos, me enseñaron lo que es perderse en algo
        y no querer que te encuentren.&rdquo;
     </div>
+    <div class="scroll-hint" id="hint-1">
+      <span>desliza</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,180,193,.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
   </div>
 </section>
 
 <!-- PÁGINA 2 - Tu Fuerza me Inspira -->
 <section class="page" id="p2">
-  <div class="inner-page">
+  <div class="inner-page" onscroll="checkScroll(this)">
     <div class="sparkle-container" id="sparkles-2"></div>
     <div class="deco-stars">✦<br>✦<br>✦</div>
 
@@ -690,12 +724,16 @@
        para que la sientas. Se nota en cada mensaje, en cada audio,
        en cada mirada a través de la pantalla.&rdquo;
     </div>
+    <div class="scroll-hint" id="hint-2">
+      <span>desliza</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,180,193,.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
   </div>
 </section>
 
 <!-- PÁGINA 3 - Eres Extraordinaria -->
 <section class="page" id="p3">
-  <div class="inner-page">
+  <div class="inner-page" onscroll="checkScroll(this)">
     <div class="sparkle-container" id="sparkles-3"></div>
 
     <p class="page-tag">Capítulo III · Día de la Mujer</p>
@@ -725,12 +763,16 @@
        Eres exactamente la mujer que necesitaba conocer.
        Eres tú, Ashley.&rdquo;
     </div>
+    <div class="scroll-hint" id="hint-3">
+      <span>desliza</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,180,193,.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
   </div>
 </section>
 
 <!-- PÁGINA 4 - Gracias por Existir -->
 <section class="page" id="p4">
-  <div class="inner-page">
+  <div class="inner-page" onscroll="checkScroll(this)">
     <div class="sparkle-container" id="sparkles-4"></div>
     <div class="deco-hearts">🌸<br>🌸</div>
 
@@ -763,12 +805,16 @@
        Te siento en cada mensaje, en cada audio,
        en cada foto que me regalas.&rdquo;
     </div>
+    <div class="scroll-hint" id="hint-4">
+      <span>desliza</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,180,193,.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
   </div>
 </section>
 
 <!-- PÁGINA 5 - Mi Promesa para Ti -->
 <section class="page" id="p5">
-  <div class="inner-page">
+  <div class="inner-page" onscroll="checkScroll(this)">
     <div class="sparkle-container" id="sparkles-5"></div>
 
     <p class="page-tag">Capítulo V · Día de la Mujer</p>
@@ -797,6 +843,10 @@
       &ldquo;Hoy el mundo te celebra.
        Yo te celebro cada día, desde donde estoy,
        con todo lo que tengo.&rdquo;
+    </div>
+    <div class="scroll-hint" id="hint-5">
+      <span>desliza</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,180,193,.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
   </div>
 </section>
@@ -880,6 +930,12 @@ function goToPage(n) {
   updateNav();
 
   if (n === TOTAL - 1) launchFireworks();
+
+  /* Resetear scroll y mostrar hint en la nueva página */
+  setTimeout(() => {
+    const card = document.querySelector('#' + PAGES[n] + ' .inner-page');
+    if (card) { card.scrollTop = 0; checkScroll(card); }
+  }, 50);
 }
 
 function nextPage() { goToPage(current + 1); }
@@ -1241,7 +1297,25 @@ loadYouTubeAPI();
   }); /* end requestAnimationFrame(startFlowers) */
 })();
 
-/* ══════════════════════ TECLADO ══════════════════════ */
+/* ══════════════════════ SCROLL HINT ══════════════════════ */
+function checkScroll(el) {
+  /* Busca el hint dentro de la misma tarjeta */
+  const hint = el.querySelector('.scroll-hint');
+  if (!hint) return;
+  const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 10;
+  hint.classList.toggle('hidden', atBottom);
+}
+
+/* Init: evaluar hints al cargar */
+document.querySelectorAll('.inner-page').forEach(card => {
+  /* Solo mostrar si hay overflow */
+  setTimeout(() => {
+    if (card.scrollHeight <= card.clientHeight + 10) {
+      const hint = card.querySelector('.scroll-hint');
+      if (hint) hint.style.display = 'none';
+    }
+  }, 400);
+});
 document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  nextPage();
   if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')    prevPage();
