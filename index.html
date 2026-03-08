@@ -2,7 +2,10 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#07000d" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Para Ashley 🌹</title>
   <link
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@500;700&family=Lato:wght@300;400&display=swap"
@@ -25,12 +28,13 @@
     }
 
     html, body {
-      width: 100%; height: 100%;
+      width: 100%; height: 100%; height: 100dvh;
       overflow: hidden;
       background: var(--dark);
       font-family: 'Lato', sans-serif;
       color: var(--text);
       user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
     /* ══════════════════════════════════════
@@ -56,8 +60,8 @@
     .flower-field {
       position: relative;
       width: min(640px, 98vw);
-      height: min(320px, 46vw);
-      margin-bottom: 14px;
+      height: min(320px, 42vw, 38vh);
+      margin-bottom: 10px;
     }
     #flower-canvas {
       width: 100%; height: 100%;
@@ -182,7 +186,7 @@
       transform: translateX(100%) scale(0.96);
       transition: opacity .75s ease, transform .75s cubic-bezier(.77,0,.175,1);
       pointer-events: none;
-      padding: 24px;
+      padding: 24px 24px calc(90px + env(safe-area-inset-bottom, 0px)) 24px;
     }
     .page.active  { opacity: 1; transform: translateX(0) scale(1); pointer-events: all; }
     .page.exit    { opacity: 0; transform: translateX(-100%) scale(0.96); pointer-events: none; }
@@ -268,7 +272,7 @@
     .inner-page {
       position: relative;
       width: min(750px, 96vw);
-      min-height: min(580px, 85vh);
+      min-height: min(480px, 70dvh);
       background:
         radial-gradient(ellipse at 20% 10%, rgba(232,81,106,.08) 0%, transparent 50%),
         radial-gradient(ellipse at 80% 90%, rgba(212,168,67,.06) 0%, transparent 50%),
@@ -505,12 +509,92 @@
     }
 
     /* ─── SCROLL PARA MÓVIL ─── */
-    .inner-page { overflow-y: auto; max-height: 85vh; }
+    .inner-page { overflow-y: auto; max-height: calc(100dvh - 120px); -webkit-overflow-scrolling: touch; }
 
     /* Scrollbar bonita */
     .inner-page::-webkit-scrollbar { width: 5px; }
     .inner-page::-webkit-scrollbar-track { background: transparent; }
     .inner-page::-webkit-scrollbar-thumb { background: rgba(232,81,106,.4); border-radius: 3px; }
+
+    /* ─── NAVEGACIÓN: safe area ─── */
+    #nav {
+      bottom: max(22px, env(safe-area-inset-bottom, 0px) + 14px);
+    }
+
+    /* ─── MÚSICA: safe area top ─── */
+    #music-btn {
+      top: max(18px, env(safe-area-inset-top, 0px) + 10px);
+      right: max(20px, env(safe-area-inset-right, 0px) + 12px);
+    }
+
+    /* ════════════════════════════
+       RESPONSIVE – MÓVIL
+    ════════════════════════════ */
+    @media (max-width: 480px) {
+
+      /* Intro: campo de flores más compacto */
+      .flower-field {
+        height: min(180px, 44vw);
+        margin-bottom: 6px;
+      }
+      .intro-label  { font-size: .62rem; letter-spacing: .28em; margin-bottom: 6px; }
+      .intro-title  { font-size: clamp(2rem, 11vw, 3.2rem); }
+      .intro-sub    { font-size: .82rem; margin-top: 5px; }
+      .intro-skip   { bottom: 18px; right: 16px; padding: 5px 14px; font-size: .65rem; }
+      .intro-divider { margin-top: 10px; }
+
+      /* Portada: rosa más pequeña */
+      .big-rose-wrap svg { width: 120px; height: 120px; }
+      .big-rose-wrap { margin-bottom: 14px; }
+      .cover-date   { font-size: .68rem; letter-spacing: .22em; margin-bottom: 8px; }
+      .cover-title  { font-size: clamp(2.6rem, 13vw, 4rem); }
+      .cover-sub    { font-size: .85rem; margin-top: 7px; }
+      .start-btn    { margin-top: 22px; padding: 12px 32px; font-size: 1.15rem; }
+
+      /* Páginas interiores: menos padding */
+      .page         { padding: 14px 14px calc(80px + env(safe-area-inset-bottom, 0px)) 14px; }
+      .inner-page   {
+        padding: 22px 20px;
+        min-height: unset;
+        max-height: calc(100dvh - 100px);
+        gap: 14px;
+        border-radius: 18px;
+      }
+      .page-tag     { font-size: .65rem; letter-spacing: .26em; }
+      .page-heading { font-size: clamp(2rem, 9vw, 3rem); }
+      .page-text    { font-size: .9rem; line-height: 1.75; }
+      .page-quote   { font-size: clamp(1rem, 4.5vw, 1.2rem); padding: 10px 14px; }
+      .love-list li { font-size: .88rem; gap: 8px; }
+      .deco-hearts,
+      .deco-stars   { display: none; } /* evita overflow en pantallas pequeñas */
+
+      /* Página final */
+      .final-emoji  { font-size: clamp(2.4rem, 11vw, 4rem); }
+      .final-text   { font-size: clamp(1.7rem, 8vw, 2.8rem); }
+      .final-sub    { font-size: .88rem; }
+      .restart-btn  { padding: 9px 26px; font-size: 1rem; }
+
+      /* Navegación: botones más grandes (44px táctil mínimo) */
+      .nav-arrow    { width: 44px; height: 44px; font-size: 1.2rem; }
+      .dots         { gap: 10px; }
+      .dot          { width: 8px; height: 8px; }
+
+      /* Música */
+      #music-btn    { font-size: .7rem; padding: 6px 12px; }
+    }
+
+    /* Landscape móvil */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .flower-field { height: 120px; }
+      .intro-title  { font-size: 2.2rem; }
+      .intro-label, .intro-sub, .intro-divider { display: none; }
+      .inner-page   { max-height: calc(100dvh - 80px); min-height: unset; gap: 10px; padding: 16px 24px; }
+      .page-heading { font-size: 1.8rem; }
+      .page         { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+      .big-rose-wrap svg { width: 90px; height: 90px; }
+      .big-rose-wrap { margin-bottom: 10px; }
+      .start-btn    { margin-top: 14px; }
+    }
 
     /* Responsive tipografía ya cubierta con clamp() */
   </style>
